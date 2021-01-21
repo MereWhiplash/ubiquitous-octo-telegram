@@ -1,17 +1,18 @@
 package intercom;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import intercom.customers.Customer;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-
-import javax.swing.JFileChooser;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import intercom.customers.Customer;
+import java.util.stream.Collectors;
 
 /**
  * Hello world!
@@ -20,28 +21,120 @@ public final class App {
 
     static JFileChooser fileChooser = new JFileChooser();
 
+    //Home
+    static double homeLatitude = 53.339428;
+    static double homeLongitude = -6.257664;
+
     private App() {
     }
 
     public static void main(String[] args) {
-        filePicker();
-    }
+        int option = 0;
+        while (option != 4) {
+            option = menu();
+            switch (option) {
+                case 1:
+                    outputToTxt(pickFile());
+                    break;
+                case 2:
+                    outputToConsole(pickFile());
+                    break;
+                default:
+                    System.out.println("Please enter a valid option.");
 
-    public static void filePicker() {
-        int filestream = fileChooser.showOpenDialog(null);
-        if (filestream == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            List<String> customerStrings = readFileInputStrings(file);
-            if (customerStrings.isEmpty()) {
-                System.out.println("No Customers Found in Files");
-            } else {
-                createCustomerList(customerStrings);
             }
-
         }
     }
 
-    private static List<String> readFileInputStrings(File file) {
+    private static void outputToConsole(File file) {
+        List<Customer> customers = calculateLocalCustomers(readFileAsCustomers(file));
+        for(Customer customer: customers){
+            System.out.println(customer.toString());
+        }
+
+    }
+
+    private static int menu() {
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("Intercom Hookups");
+        System.out.println("-------------------------\n");
+        System.out.println("1 - Select List and Output file to .txt");
+        System.out.println("2 - Output to Console");
+        System.out.println("4 - Quit");
+
+        return input.nextInt();
+    }
+
+    public static void outputToTxt(File file) {
+        if(!fileSelected(file)){ return; }else{
+            List<Customer> customers = calculateLocalCustomers(readFileAsCustomers(file));
+            writeCustomersToFile(customers);
+        }
+    }
+
+    private static void writeCustomersToFile(List<Customer> customers) {
+        try {
+            File customerFile = new File("customers.txt");
+            if (customerFile.createNewFile()) {
+                System.out.println("File created: " + customerFile.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            FileWriter fileWriter = new FileWriter("customers.txt");
+            for (Customer c: customers) {
+                fileWriter.write("Name: " + c.getName() + ", UserID: " + c.getUserId() + "\n");
+            }
+            fileWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean fileSelected(File file) {
+        if (file == null) {
+            System.out.println("Please Select a file...");
+            return false;
+        }
+        return true;
+    }
+
+    public static File pickFile() {
+        int filestream = fileChooser.showOpenDialog(null);
+        if (filestream == JFileChooser.APPROVE_OPTION) {
+            return fileChooser.getSelectedFile();
+        }
+        return null;
+    }
+
+    private static List<Customer> calculateLocalCustomers(List<Customer> customers) {
+        customers = customers.stream()
+            .filter(customer -> distanceBetweenTwoPoints(homeLatitude, homeLongitude, customer.getLatitude(), customer.getLongitude()) < 100.00)
+            .collect(Collectors.toList());
+        Collections.sort(customers);
+        return customers;
+    }
+
+    private static double distanceBetweenTwoPoints(double x1, double y1, double x2, double y2) {
+        //Convert to Radians
+        x1 = Math.toRadians(x1);
+        y1 = Math.toRadians(y1);
+        x2 = Math.toRadians(x2);
+        y2 = Math.toRadians(y2);
+        //Great Circle Distance in Radians
+        double angle = Math.acos(Math.sin(x1) * Math.sin(x2)
+            + Math.cos(x1) * Math.cos(x2) * Math.cos(y1 - y2));
+        //Return to Degrees
+        angle = Math.toDegrees(angle);
+        //Distance in Nautical Miles
+        double distanceInNauticalMiles = 60 * angle;
+        //1.852 is the conversion to kilometers. We arent on a cruise after all. Intercom cruise? Sold.
+        return distanceInNauticalMiles * 1.852;
+    }
+
+    private static List<Customer> readFileAsCustomers(File file) {
         List<String> strings = new ArrayList<>();
         try (Scanner input = new Scanner(file)) {
             while (input.hasNextLine()) {
@@ -52,7 +145,7 @@ public final class App {
             System.err.println(e.getLocalizedMessage());
         }
 
-        return strings;
+        return createCustomerList(strings);
     }
 
     private static List<Customer> createCustomerList(List<String> customerStrings) {
@@ -60,8 +153,7 @@ public final class App {
         ObjectMapper objectMapper = new ObjectMapper();
 
         for (String customerString : customerStrings) {
-            if (customerString.isEmpty() || customerString.length() <= 0) {
-                continue;
+            if (customerString.isEmpty()) {
             } else {
                 try {
                     customers.add(objectMapper.readValue(customerString, Customer.class));

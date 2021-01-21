@@ -2,10 +2,10 @@ package intercom.customers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Customer {
+public class Customer implements Comparable <Customer>{
 
-    private float latitude;
-    private float longitude;
+    private double latitude;
+    private double longitude;
     private int userId;
     private String name;
 
@@ -26,7 +26,7 @@ public class Customer {
     }
 
     @JsonProperty("latitude")
-    public float getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
@@ -35,7 +35,7 @@ public class Customer {
     }
 
     @JsonProperty("longitude")
-    public float getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
@@ -59,6 +59,11 @@ public class Customer {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public int compareTo(Customer o) {
+        return this.userId - o.getUserId() ;
     }
 
 }
