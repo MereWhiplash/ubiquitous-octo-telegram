@@ -13,7 +13,7 @@ public class Customer implements Comparable <Customer>{
 
     }
 
-    public Customer(String name, int userId, float longitude, float latitude){
+    public Customer(String name, int userId, double longitude, double latitude){
         setName(name);
         setUserId(userId);
         setLongitude(longitude);
@@ -30,7 +30,7 @@ public class Customer implements Comparable <Customer>{
         return latitude;
     }
 
-    public void setLatitude(float latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
@@ -39,7 +39,7 @@ public class Customer implements Comparable <Customer>{
         return longitude;
     }
 
-    public void setLongitude(float longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 

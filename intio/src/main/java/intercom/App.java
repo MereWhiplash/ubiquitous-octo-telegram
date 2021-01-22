@@ -16,14 +16,22 @@ import java.util.stream.Collectors;
 
 /**
  * Hello world!
+ *
+ * Requirements:
+ * 1. Reads list of customers(customers.txt), as JSON, one per line.
+ * 2. Return list of customers(customersInRange.txt) plain text, with ID + Name.
+ *
+ * QoL:
+ * File Picking, Output to console, Read from URL, Customizable Max Range, Set Home Location.
+ *
  */
 public final class App {
 
     static JFileChooser fileChooser = new JFileChooser();
 
     //Home
-    static double homeLatitude = 53.339428;
-    static double homeLongitude = -6.257664;
+    static double HOME_LATITUDE = 53.339428;
+    static double HOME_LONGITUDE = -6.257664;
 
     private App() {
     }
@@ -39,6 +47,8 @@ public final class App {
                 case 2:
                     outputToConsole(pickFile());
                     break;
+                case 4:
+                    System.exit(0);
                 default:
                     System.out.println("Please enter a valid option.");
 
@@ -47,7 +57,7 @@ public final class App {
     }
 
     private static void outputToConsole(File file) {
-        List<Customer> customers = calculateLocalCustomers(readFileAsCustomers(file));
+        List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
         for(Customer customer: customers){
             System.out.println(customer.toString());
         }
@@ -57,8 +67,8 @@ public final class App {
     private static int menu() {
         Scanner input = new Scanner(System.in);
 
-        System.out.println("Intercom Hookups");
-        System.out.println("-------------------------\n");
+        System.out.println("----Intercom Hookups----");
+        System.out.println("------------------------");
         System.out.println("1 - Select List and Output file to .txt");
         System.out.println("2 - Output to Console");
         System.out.println("4 - Quit");
@@ -66,22 +76,23 @@ public final class App {
         return input.nextInt();
     }
 
-    public static void outputToTxt(File file) {
+    private static void outputToTxt(File file) {
         if(!fileSelected(file)){ return; }else{
-            List<Customer> customers = calculateLocalCustomers(readFileAsCustomers(file));
+            List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
             writeCustomersToFile(customers);
         }
     }
 
     private static void writeCustomersToFile(List<Customer> customers) {
+        if(customers.isEmpty()){return;}
         try {
-            File customerFile = new File("customers.txt");
+            File customerFile = new File("customersInRange.txt");
             if (customerFile.createNewFile()) {
                 System.out.println("File created: " + customerFile.getName());
             } else {
                 System.out.println("File already exists.");
             }
-            FileWriter fileWriter = new FileWriter("customers.txt");
+            FileWriter fileWriter = new FileWriter("customersInRange.txt");
             for (Customer c: customers) {
                 fileWriter.write("Name: " + c.getName() + ", UserID: " + c.getUserId() + "\n");
             }
@@ -93,7 +104,7 @@ public final class App {
         }
     }
 
-    private static boolean fileSelected(File file) {
+    public static boolean fileSelected(File file) {
         if (file == null) {
             System.out.println("Please Select a file...");
             return false;
@@ -101,7 +112,7 @@ public final class App {
         return true;
     }
 
-    public static File pickFile() {
+    private static File pickFile() {
         int filestream = fileChooser.showOpenDialog(null);
         if (filestream == JFileChooser.APPROVE_OPTION) {
             return fileChooser.getSelectedFile();
@@ -109,7 +120,11 @@ public final class App {
         return null;
     }
 
-    private static List<Customer> calculateLocalCustomers(List<Customer> customers) {
+    public static List<Customer> calculateLocalCustomersToLocation(List<Customer> customers, double homeLatitude, double homeLongitude) {
+        if(customers == null){
+            return Collections.emptyList();
+        }
+
         customers = customers.stream()
             .filter(customer -> distanceBetweenTwoPoints(homeLatitude, homeLongitude, customer.getLatitude(), customer.getLongitude()) < 100.00)
             .collect(Collectors.toList());
@@ -117,7 +132,7 @@ public final class App {
         return customers;
     }
 
-    private static double distanceBetweenTwoPoints(double x1, double y1, double x2, double y2) {
+    public static double distanceBetweenTwoPoints(double x1, double y1, double x2, double y2) {
         //Convert to Radians
         x1 = Math.toRadians(x1);
         y1 = Math.toRadians(y1);
@@ -148,7 +163,7 @@ public final class App {
         return createCustomerList(strings);
     }
 
-    private static List<Customer> createCustomerList(List<String> customerStrings) {
+    public static List<Customer> createCustomerList(List<String> customerStrings) {
         List<Customer> customers = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
 
