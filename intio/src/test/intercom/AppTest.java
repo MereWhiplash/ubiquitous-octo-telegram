@@ -17,8 +17,8 @@ class AppTest {
 
     File file;
 
-    private static double LATITUDE = 53.2451022;
-    private static double LONGITUDE = -6.238335;
+    private static final double LATITUDE = 53.2451022;
+    private static final double LONGITUDE = -6.238335;
 
 
     List<Customer> createCustomers(){

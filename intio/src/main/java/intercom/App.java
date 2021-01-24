@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import intercom.customers.Customer;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.swing.filechooser.FileFilter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +35,9 @@ public final class App {
     }
 
     public static void main(String[] args) {
+        setupFileFilter();
         int option = 0;
-        while (option != 4) {
+        while (true) {
             option = menu();
             switch (option) {
                 case 1:
@@ -57,9 +56,19 @@ public final class App {
     }
 
     private static void outputToConsole(File file) {
-        List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
-        for(Customer customer: customers){
-            System.out.println(customer.toString());
+        if(!fileSelected(file))
+        {
+            System.out.println("File not selected.");
+            return;
+        }else {
+            List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
+            if (customers.isEmpty()){
+                System.out.println("Customers file did not contain users in range.");
+                return;
+            }
+            for (Customer customer : customers) {
+                System.out.println(customer.toString());
+            }
         }
 
     }
@@ -70,21 +79,31 @@ public final class App {
         System.out.println("----Intercom Hookups----");
         System.out.println("------------------------");
         System.out.println("1 - Select List and Output file to .txt");
-        System.out.println("2 - Output to Console");
+        System.out.println("2 - Select List and Output to Console");
         System.out.println("4 - Quit");
 
+        while(!input.hasNextInt()) {
+            System.out.println("Please enter a integer option. \n");
+            input.next();
+        }
         return input.nextInt();
     }
 
     private static void outputToTxt(File file) {
-        if(!fileSelected(file)){ return; }else{
+        if(!fileSelected(file)){
+            System.out.println("File not selected.");
+            return;
+        }else{
             List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
             writeCustomersToFile(customers);
         }
     }
 
     private static void writeCustomersToFile(List<Customer> customers) {
-        if(customers.isEmpty()){return;}
+        if(customers.isEmpty()){
+            System.out.println("Customers file did not contain users in range.");
+            return;
+        }
         try {
             File customerFile = new File("customersInRange.txt");
             if (customerFile.createNewFile()) {
@@ -110,6 +129,22 @@ public final class App {
             return false;
         }
         return true;
+    }
+
+    private static void setupFileFilter(){
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                String filename = f.getName().toLowerCase();
+                return filename.endsWith(".txt") ;
+
+            }
+
+            @Override
+            public String getDescription() {
+                return "Please choose a file ending with .txt";
+            }
+        });
     }
 
     private static File pickFile() {
@@ -163,21 +198,21 @@ public final class App {
         return createCustomerList(strings);
     }
 
-    public static List<Customer> createCustomerList(List<String> customerStrings) {
+    private static List<Customer> createCustomerList(List<String> customerStrings) {
         List<Customer> customers = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
 
         for (String customerString : customerStrings) {
             if (customerString.isEmpty()) {
+                return Collections.emptyList();
             } else {
                 try {
                     customers.add(objectMapper.readValue(customerString, Customer.class));
                 } catch (Exception e) {
-                    System.err.println(e.getLocalizedMessage());
+                    System.err.println("File not formatted correctly: " + e.getLocalizedMessage());
                 }
             }
         }
-
         return customers;
     }
 }
