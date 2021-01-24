@@ -5,7 +5,10 @@ import intercom.customers.Customer;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,14 +17,13 @@ import java.util.stream.Collectors;
 
 /**
  * Hello world!
- *
+ * <p>
  * Requirements:
  * 1. Reads list of customers(customers.txt), as JSON, one per line.
  * 2. Return list of customers(customersInRange.txt) plain text, with ID + Name.
- *
+ * <p>
  * QoL:
  * File Picking, Output to console, Read from URL, Customizable Max Range, Set Home Location.
- *
  */
 public final class App {
 
@@ -56,13 +58,12 @@ public final class App {
     }
 
     private static void outputToConsole(File file) {
-        if(!fileSelected(file))
-        {
+        if (!fileSelected(file)) {
             System.out.println("File not selected.");
             return;
-        }else {
+        } else {
             List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
-            if (customers.isEmpty()){
+            if (customers.isEmpty()) {
                 System.out.println("Customers file did not contain users in range.");
                 return;
             }
@@ -82,7 +83,7 @@ public final class App {
         System.out.println("2 - Select List and Output to Console");
         System.out.println("4 - Quit");
 
-        while(!input.hasNextInt()) {
+        while (!input.hasNextInt()) {
             System.out.println("Please enter a integer option. \n");
             input.next();
         }
@@ -90,17 +91,17 @@ public final class App {
     }
 
     private static void outputToTxt(File file) {
-        if(!fileSelected(file)){
+        if (!fileSelected(file)) {
             System.out.println("File not selected.");
             return;
-        }else{
+        } else {
             List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
             writeCustomersToFile(customers);
         }
     }
 
     private static void writeCustomersToFile(List<Customer> customers) {
-        if(customers.isEmpty()){
+        if (customers.isEmpty()) {
             System.out.println("Customers file did not contain users in range.");
             return;
         }
@@ -112,7 +113,7 @@ public final class App {
                 System.out.println("File already exists.");
             }
             FileWriter fileWriter = new FileWriter("customersInRange.txt");
-            for (Customer c: customers) {
+            for (Customer c : customers) {
                 fileWriter.write("Name: " + c.getName() + ", UserID: " + c.getUserId() + "\n");
             }
             fileWriter.close();
@@ -131,12 +132,12 @@ public final class App {
         return true;
     }
 
-    private static void setupFileFilter(){
+    private static void setupFileFilter() {
         fileChooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
                 String filename = f.getName().toLowerCase();
-                return filename.endsWith(".txt") ;
+                return filename.endsWith(".txt");
 
             }
 
@@ -156,7 +157,7 @@ public final class App {
     }
 
     public static List<Customer> calculateLocalCustomersToLocation(List<Customer> customers, double homeLatitude, double homeLongitude) {
-        if(customers == null){
+        if (customers == null) {
             return Collections.emptyList();
         }
 

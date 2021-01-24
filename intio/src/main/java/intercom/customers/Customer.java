@@ -2,18 +2,18 @@ package intercom.customers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Customer implements Comparable <Customer>{
+public class Customer implements Comparable<Customer> {
 
     private double latitude;
     private double longitude;
     private int userId;
     private String name;
 
-    public Customer(){
+    public Customer() {
 
     }
 
-    public Customer(String name, int userId, double longitude, double latitude){
+    public Customer(String name, int userId, double longitude, double latitude) {
         setName(name);
         setUserId(userId);
         setLongitude(longitude);
@@ -63,7 +63,7 @@ public class Customer implements Comparable <Customer>{
 
     @Override
     public int compareTo(Customer o) {
-        return this.userId - o.getUserId() ;
+        return this.userId - o.getUserId();
     }
 
 }
