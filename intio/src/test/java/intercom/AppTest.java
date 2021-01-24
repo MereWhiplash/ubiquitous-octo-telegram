@@ -75,4 +75,33 @@ class AppTest {
         assertEquals(emptyList(), calculateLocalCustomersToLocation(null, HOME_LATITUDE, HOME_LONGITUDE));
     }
 
+    @Test
+    void isValidLongitudeTest(){
+        assertFalse(isValidLongitude(-1100));
+        assertFalse(isValidLongitude(-3000));
+        assertFalse(isValidLongitude(243235234));
+        assertFalse(isValidLongitude(234234.5454));
+
+        assertTrue(isValidLongitude(-179));
+        assertTrue(isValidLongitude(179));
+        assertTrue(isValidLongitude(-180));
+        assertTrue(isValidLongitude(180));
+
+    }
+
+    @Test
+    void isValidLatitudeTest(){
+        assertFalse(isValidLatitude(-1100));
+        assertFalse(isValidLatitude(-3000));
+        assertFalse(isValidLatitude(243235234));
+        assertFalse(isValidLongitude(234234.5454));
+
+        assertTrue(isValidLatitude(-89));
+        assertTrue(isValidLatitude(89));
+        assertTrue(isValidLatitude(-90));
+        assertTrue(isValidLatitude(90));
+    }
+
+
+
 }

@@ -12,7 +12,6 @@
     <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
     <checkstyle.version>8.29</checkstyle.version>
     <checkstyle-rules.version>4.0.1</checkstyle-rules.version>
-    <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
     <jacoco-maven-plugin.version>0.8.4</jacoco-maven-plugin.version>
     <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
   </properties>
@@ -83,6 +82,14 @@
               <mainClass>intercom.App</mainClass>
             </manifest>
           </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>9</source>
+          <target>9</target>
         </configuration>
       </plugin>
     </plugins>

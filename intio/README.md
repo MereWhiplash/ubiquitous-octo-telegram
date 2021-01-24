@@ -46,3 +46,11 @@ Please make sure to update tests as appropriate.
 ## Known Issues
 -Sometimes, and I cannot figure out why. The dialog window for selecting files is not
 brought to foreground. Just take a peek behind the currently opened windows.
+
+-On MacOS and Windows, the previous file selection persists. No matter what happens, seems to be
+a shortcoming of JavaFx. See details [here](https://stackoverflow.com/questions/12736880/clear-jfilechooser-selection-after-adding-files-to-a-jlist)
+Have implemented a fix for windows, but unable to test as I use a Mac. A good alternative is to
+just read from a command line argument the file in question.
+
+-Switched to JFrame and filename filtering via FileDialog as a result of above. JavaSwing feels ancient.
+

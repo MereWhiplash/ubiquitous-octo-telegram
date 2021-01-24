@@ -5,14 +5,10 @@ import intercom.customers.Customer;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public final class App {
 
-    static JFileChooser fileChooser = new JFileChooser();
+    static JFileChooser fileChooser;
 
     //Home
     static double HOME_LATITUDE = 53.339428;
@@ -37,7 +33,6 @@ public final class App {
     }
 
     public static void main(String[] args) {
-        setupFileFilter();
         int option = 0;
         while (true) {
             option = menu();
@@ -48,6 +43,10 @@ public final class App {
                 case 2:
                     outputToConsole(pickFile());
                     break;
+                case 3:
+                    inputLatitude();
+                    inputLongitude();
+                    break;
                 case 4:
                     System.exit(0);
                 default:
@@ -57,10 +56,28 @@ public final class App {
         }
     }
 
+    private static int menu() {
+        Scanner input = new Scanner(System.in);
+        String homeBase = String.format("-- lat: %s -- long: %s --", HOME_LATITUDE, HOME_LONGITUDE);
+
+        System.out.println("----Intercom Hookups----");
+        System.out.println("------------------------");
+        System.out.println(homeBase);
+        System.out.println("1 - Select List and Output file to .txt");
+        System.out.println("2 - Select List and Output to Console");
+        System.out.println("3 - Input Latitude and Longitude");
+        System.out.println("4 - Quit");
+
+        while (!input.hasNextInt()) {
+            System.out.println("Please enter a integer option. \n");
+            input.next();
+        }
+        return input.nextInt();
+    }
+
     private static void outputToConsole(File file) {
         if (!fileSelected(file)) {
             System.out.println("File not selected.");
-            return;
         } else {
             List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
             if (customers.isEmpty()) {
@@ -74,26 +91,37 @@ public final class App {
 
     }
 
-    private static int menu() {
+    private static void inputLatitude() {
         Scanner input = new Scanner(System.in);
-
-        System.out.println("----Intercom Hookups----");
-        System.out.println("------------------------");
-        System.out.println("1 - Select List and Output file to .txt");
-        System.out.println("2 - Select List and Output to Console");
-        System.out.println("4 - Quit");
-
-        while (!input.hasNextInt()) {
-            System.out.println("Please enter a integer option. \n");
+        System.out.println("Please enter a Latitude option. \n");
+        while (!input.hasNextDouble()) {
             input.next();
         }
-        return input.nextInt();
+        double latitude = input.nextDouble();
+        if (!isValidLatitude(latitude)){
+            inputLatitude();
+        }else{
+            HOME_LATITUDE = latitude;
+        }
+    }
+
+    private static void inputLongitude(){
+        Scanner input = new Scanner(System.in);
+        System.out.println("Please enter a Longitude option. \n");
+        while (!input.hasNextDouble()) {
+            input.next();
+        }
+        double longitude = input.nextDouble();
+        if (!isValidLongitude(longitude)){
+            inputLongitude();
+        }else{
+            HOME_LONGITUDE = longitude;
+        }
     }
 
     private static void outputToTxt(File file) {
         if (!fileSelected(file)) {
             System.out.println("File not selected.");
-            return;
         } else {
             List<Customer> customers = calculateLocalCustomersToLocation(readFileAsCustomers(file), HOME_LATITUDE, HOME_LONGITUDE);
             writeCustomersToFile(customers);
@@ -124,48 +152,31 @@ public final class App {
         }
     }
 
+    private static FilenameFilter setupFileFilter() {
+        FilenameFilter filenameFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".txt");
+            }
+        };
+
+        return filenameFilter;
+    }
+
+    public static boolean isValidLongitude(double value){
+        return Math.abs(value) <= 180;
+    }
+
+    public static boolean isValidLatitude(double value){
+        return Math.abs(value) <= 90;
+    }
+
     public static boolean fileSelected(File file) {
         if (file == null) {
             System.out.println("Please Select a file...");
             return false;
         }
         return true;
-    }
-
-    private static void setupFileFilter() {
-        fileChooser.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                String filename = f.getName().toLowerCase();
-                return filename.endsWith(".txt");
-
-            }
-
-            @Override
-            public String getDescription() {
-                return "Please choose a file ending with .txt";
-            }
-        });
-    }
-
-    private static File pickFile() {
-        int filestream = fileChooser.showOpenDialog(null);
-        if (filestream == JFileChooser.APPROVE_OPTION) {
-            return fileChooser.getSelectedFile();
-        }
-        return null;
-    }
-
-    public static List<Customer> calculateLocalCustomersToLocation(List<Customer> customers, double homeLatitude, double homeLongitude) {
-        if (customers == null) {
-            return Collections.emptyList();
-        }
-
-        customers = customers.stream()
-            .filter(customer -> distanceBetweenTwoPoints(homeLatitude, homeLongitude, customer.getLatitude(), customer.getLongitude()) < 100.00)
-            .collect(Collectors.toList());
-        Collections.sort(customers);
-        return customers;
     }
 
     public static double distanceBetweenTwoPoints(double x1, double y1, double x2, double y2) {
@@ -183,6 +194,36 @@ public final class App {
         double distanceInNauticalMiles = 60 * angle;
         //1.852 is the conversion to kilometers. We arent on a cruise after all. Intercom cruise? Sold.
         return distanceInNauticalMiles * 1.852;
+    }
+
+    private static File pickFile() {
+        JFrame frame = new JFrame();
+        frame.setVisible(true);
+        FileDialog fileDialog = new FileDialog(frame, "Choose a file", FileDialog.LOAD);
+        fileDialog.setFilenameFilter(setupFileFilter());
+        fileDialog.setVisible(true);
+        String filename = fileDialog.getFile();
+
+        if (filename == null) {
+            System.out.println("You cancelled the choice");
+        }
+        else{
+                System.out.println("You chose " + filename);
+                return fileDialog.getFiles()[0];
+        }
+        return null;
+    }
+
+    public static List<Customer> calculateLocalCustomersToLocation(List<Customer> customers, double homeLatitude, double homeLongitude) {
+        if (customers == null) {
+            return Collections.emptyList();
+        }
+
+        customers = customers.stream()
+            .filter(customer -> distanceBetweenTwoPoints(homeLatitude, homeLongitude, customer.getLatitude(), customer.getLongitude()) < 100.00)
+            .collect(Collectors.toList());
+        Collections.sort(customers);
+        return customers;
     }
 
     private static List<Customer> readFileAsCustomers(File file) {
