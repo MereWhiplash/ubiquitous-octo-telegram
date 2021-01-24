@@ -21,6 +21,23 @@ java -jar intio-1.0.jar
 
 and follow instructions within the command line from there
 
+## Compiling and Testing
+
+Testing can be completed with the following
+```bash
+mvn test
+```
+
+Compilation is via
+```bash
+mvn clean install
+```
+or
+```bash
+mvn clean package
+```
+
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 

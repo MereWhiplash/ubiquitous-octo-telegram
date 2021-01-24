@@ -37,33 +37,33 @@ class AppTest {
     }
 
     @Test
-    void fileSelectedTrue() {
+    void fileSelectedTrueTest() {
         assertTrue(fileSelected(file));
     }
 
     @Test
-    void fileSelectedFalse() {
+    void fileSelectedFalseTest() {
         assertFalse(fileSelected(null));
     }
 
     @Test
-    void distanceBetweenTwoPointsExpectedRange() {
+    void distanceBetweenTwoPointsExpectedRangeTest() {
         assertEquals(1543.7166547203278, distanceBetweenTwoPoints(10.0, 10.0, 20.0, 20.0));
     }
 
     @Test
-    void distanceBetweenTwoPointsMaxRange() {
+    void distanceBetweenTwoPointsMaxRangeTest() {
         assertEquals(9120.356036722245, distanceBetweenTwoPoints(Double.MAX_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MIN_VALUE));
     }
 
     @Test
-    void calculateLocalCustomersNoneInRange() {
+    void calculateLocalCustomersNoneInRangeTest() {
         List<Customer> customers = createCustomers();
         assertEquals(emptyList(), calculateLocalCustomersToLocation(customers, HOME_LATITUDE, HOME_LONGITUDE));
     }
 
     @Test
-    void calculateLocalCustomersOneInRange() {
+    void calculateLocalCustomersOneInRangeTest() {
         List<Customer> customers = createCustomers();
         customers.get(0).setLongitude(LONGITUDE);
         customers.get(0).setLatitude(LATITUDE);
@@ -71,7 +71,7 @@ class AppTest {
     }
 
     @Test
-    void calculateLocalCustomersIsNull() {
+    void calculateLocalCustomersIsNullTest() {
         assertEquals(emptyList(), calculateLocalCustomersToLocation(null, HOME_LATITUDE, HOME_LONGITUDE));
     }
 
